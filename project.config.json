@@ -1,0 +1,15 @@
+{
+    "setting": {
+        "urlCheck": true,
+        "es6": true,
+        "postcss": true,
+        "minified": true,
+        "newFeature": true,
+        "autoCompile": true,
+        "compileHotReLoad": true,
+        "nativeCompile": true
+    },
+    "appid": "ttde30a88d4057555402",
+    "projectname": "猴哥成语大冲关",
+    "douyinProjectType": "native"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "pdf-table-reader",
+  "version": "1.0.0",
+  "description": "读取 PDF 文件并提取表格",
+  "main": "index.js",
+  "scripts": {
+    "read": "node read-pdf.js"
+  },
+  "dependencies": {
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^1.2.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "description": "成语闯关 - 抖音小游戏项目配置",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": false,
+    "minified": false,
+    "nodeModules": true
+  },
+  "compileType": "game",
+  "appid": "",
+  "projectname": "idiom-game-tt"
+}
