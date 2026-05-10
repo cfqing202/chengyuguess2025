@@ -1186,6 +1186,100 @@
   </div>
   
   <script>
+    // Supabase 配置
+    const SUPABASE_URL = 'https://gccndjqkglzgpuutyecw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjY25kanFrZ2x6Z3B1dXR5ZWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDE3OTQsImV4cCI6MjA5Mzk3Nzc5NH0.FBuVMuuQa8tVvaLdRrPYq33ehoNSSwVsx7oMxl8rjlQ';
+
+    // API 工具函数
+    async function supabaseRequest(endpoint, options = {}) {
+      const response = await fetch(SUPABASE_URL + endpoint, {
+        ...options,
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          ...options.headers
+        }
+      });
+      if (!response.ok) throw new Error(response.statusText);
+      return response.json();
+    }
+
+    // 加载数据
+    async function loadDashboardData() {
+      try {
+        const users = await supabaseRequest('/rest/v1/users?select=id');
+        document.querySelector('#page-dashboard .stat-card:first-child .stat-value').textContent = users.length.toLocaleString();
+      } catch (e) {
+        console.error('加载数据失败:', e);
+      }
+    }
+
+    async function loadIdioms() {
+      try {
+        const idioms = await supabaseRequest('/rest/v1/idioms?select=*&order=created_at.desc&limit=100');
+        renderIdiomsTable(idioms);
+      } catch (e) {
+        console.error('加载成语失败:', e);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const users = await supabaseRequest('/rest/v1/users?select=*&order=created_at.desc&limit=50');
+        renderUsersTable(users);
+      } catch (e) {
+        console.error('加载用户失败:', e);
+      }
+    }
+
+    function renderIdiomsTable(idioms) {
+      const tbody = document.querySelector('#page-questions tbody');
+      if (!tbody) return;
+      tbody.innerHTML = idioms.map((item, index) => {
+        const difficultyLabels = {1: '简单', 2: '中等', 3: '困难', 4: '较难', 5: '很难};
+        const difficultyClasses = {1: 'badge-success', 2: 'badge-warning', 3: 'badge-danger', 4: 'badge-danger', 5: 'badge-danger'};
+        return `<tr>
+          <td>${index + 1}</td>
+          <td>${item.idiom}</td>
+          <td>${item.explanation || '-'}</td>
+          <td><span class="badge ${difficultyClasses[item.difficulty] || 'badge-success'}">${difficultyLabels[item.difficulty] || '简单'}</span></td>
+          <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-primary" onclick="editIdiom('${item.id}')">编辑</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteIdiom('${item.id}')">删除</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.querySelector('#page-users tbody');
+      if (!tbody) return;
+      const identityLabels = ['书生', '童生', '秀才', '举人', '进士', '探花', '榜眼', '状元', '大宗师'];
+      tbody.innerHTML = users.map(item => {
+        const statusClass = item.user_status === 0 ? 'badge-success' : (item.user_status === 1 ? 'badge-warning' : 'badge-danger');
+        const statusText = item.user_status === 0 ? '正常' : (item.user_status === 1 ? '异常' : '禁用');
+        return `<tr>
+          <td>${item.id.substring(0, 8)}</td>
+          <td>${item.nickname || '玩家'}</td>
+          <td><span class="badge badge-primary">${identityLabels[item.identity_level] || '书生'}</span></td>
+          <td>${item.total_points || 0}</td>
+          <td>${item.ad_contribution_score || 0}/10</td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
+          <td>${item.created_at ? item.created_at.split('T')[0] : '-'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-primary">详情</button>
+              <button class="btn btn-sm btn-danger">禁用</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
     // 菜单切换
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', function() {
@@ -1196,6 +1290,11 @@
         
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-' + page).classList.add('active');
+
+        // 页面切换时加载数据
+        if (page === 'dashboard') loadDashboardData();
+        if (page === 'users') loadUsers();
+        if (page === 'questions') loadIdioms();
       });
     });
     

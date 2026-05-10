@@ -140,38 +140,132 @@ var COLORS = {
   purple: '#7C3AED'
 };
 
-var idiomDatabase = [
-  { idiom: "画龙点睛", meaning: "比喻在关键处加上精辟的话，使内容更加生动" },
-  { idiom: "守株待兔", meaning: "比喻不主动努力，而存在侥幸心理" },
-  { idiom: "对牛弹琴", meaning: "比喻对不讲道理的人讲道理" },
-  { idiom: "杯弓蛇影", meaning: "比喻因疑神疑鬼而引起恐惧" },
-  { idiom: "一鸣惊人", meaning: "比喻平时没有表现，突然做出惊人的成绩" },
-  { idiom: "叶公好龙", meaning: "比喻表面爱好而实际上并不真正爱好" },
-  { idiom: "狐假虎威", meaning: "比喻借别人的势力来欺压人" },
-  { idiom: "井底之蛙", meaning: "比喻见识短浅的人" },
-  { idiom: "亡羊补牢", meaning: "比喻出了问题以后想办法补救" },
-  { idiom: "掩耳盗铃", meaning: "比喻自己欺骗自己" },
-  { idiom: "刻舟求剑", meaning: "比喻拘泥成例，不知道跟着情势的变化而改变看法" },
-  { idiom: "自相矛盾", meaning: "比喻自己的言行前后抵触" },
-  { idiom: "望梅止渴", meaning: "比喻用空想安慰自己" },
-  { idiom: "三顾茅庐", meaning: "比喻真心诚意，一再邀请" },
-  { idiom: "四面楚歌", meaning: "比喻陷入四面受敌、孤立无援的境地" },
-  { idiom: "入木三分", meaning: "形容书法笔力刚劲有力，也比喻对文章或事物见解深刻" },
-  { idiom: "卧薪尝胆", meaning: "形容人刻苦自励，发愤图强" },
-  { idiom: "破釜沉舟", meaning: "比喻下决心不顾一切地干到底" },
-  { idiom: "胸有成竹", meaning: "比喻做事之前已经有了主意" },
-  { idiom: "指鹿为马", meaning: "比喻故意颠倒黑白，混淆是非" },
-  { idiom: "纸上谈兵", meaning: "比喻空谈理论，不能解决实际问题" },
-  { idiom: "完璧归赵", meaning: "比喻把原物完好地归还本人" },
-  { idiom: "负荆请罪", meaning: "表示向人认错赔罪" },
-  { idiom: "鹏程万里", meaning: "比喻前程远大" },
-  { idiom: "风声鹤唳", meaning: "形容惊慌失措或自相惊扰" },
-  { idiom: "一诺千金", meaning: "形容说话算数，说了就不改变" },
-  { idiom: "拔苗助长", meaning: "比喻违反事物的发展规律，急于求成" },
-  { idiom: "打草惊蛇", meaning: "比喻做事不密，使对方有所察觉和防备" },
-  { idiom: "鹤立鸡群", meaning: "比喻一个人的才能或仪表出众" },
-  { idiom: "班门弄斧", meaning: "比喻在行家面前卖弄本领，不自量力" }
-];
+// Supabase 配置
+var SUPABASE_URL = 'https://gccndjqkglzgpuutyecw.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjY25kanFrZ2x6Z3B1dXR5ZWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDE3OTQsImV4cCI6MjA5Mzk3Nzc5NH0.FBuVMuuQa8tVvaLdRrPYq33ehoNSSwVsx7oMxl8rjlQ';
+
+var idiomDatabase = [];
+
+function loadIdiomsFromSupabase(callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', SUPABASE_URL + '/rest/v1/idioms?select=*&limit=500', true);
+  xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          idiomDatabase = data.map(function(item) {
+            return {
+              idiom: item.idiom,
+              meaning: item.explanation || '',
+              difficulty: item.difficulty || 1
+            };
+          });
+          console.log('从Supabase加载了 ' + idiomDatabase.length + ' 条成语数据');
+          if (callback) callback(true);
+        } catch (e) {
+          console.error('解析成语数据失败:', e);
+          if (callback) callback(false);
+        }
+      } else {
+        console.error('加载成语数据失败:', xhr.status);
+        if (callback) callback(false);
+      }
+    }
+  };
+  xhr.send();
+}
+
+function saveUserToSupabase(userInfo, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', SUPABASE_URL + '/rest/v1/users', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Prefer', 'return=representation');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 201 || xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (callback) callback(data[0] || data);
+        } catch (e) {
+          if (callback) callback(null);
+        }
+      } else {
+        if (callback) callback(null);
+      }
+    }
+  };
+  xhr.send(JSON.stringify({
+    openid: userInfo.openid,
+    unionid: userInfo.unionid || '',
+    nickname: userInfo.nickname || '玩家',
+    avatar_url: userInfo.avatarUrl || '',
+    user_status: 0,
+    identity_level: 0,
+    total_points: userInfo.totalPoints || 0,
+    ad_contribution_score: 0
+  }));
+}
+
+function getUserFromSupabase(openid, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', SUPABASE_URL + '/rest/v1/users?openid=eq.' + encodeURIComponent(openid) + '&select=*', true);
+  xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+          if (callback) callback(data.length > 0 ? data[0] : null);
+        } catch (e) {
+          if (callback) callback(null);
+        }
+      } else {
+        if (callback) callback(null);
+      }
+    }
+  };
+  xhr.send();
+}
+
+function updateUserPoints(userId, points, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('PATCH', SUPABASE_URL + '/rest/v1/users?id=eq.' + userId, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (callback) callback(xhr.status === 200);
+    }
+  };
+  xhr.send(JSON.stringify({ total_points: points }));
+}
+
+function saveGameHistory(userId, gameData, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', SUPABASE_URL + '/rest/v1/game_history', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+  xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (callback) callback(xhr.status === 201 || xhr.status === 200);
+    }
+  };
+  xhr.send(JSON.stringify({
+    user_id: userId,
+    score: gameData.score || 0,
+    game_mode: gameData.gameMode || 'normal',
+    correct_answers: gameData.correctAnswers || 0,
+    wrong_answers: gameData.wrongAnswers || 0
+  }));
+}
 
 var state = {
   screen: 'launch',
@@ -1278,7 +1372,14 @@ function initCanvas() {
     }
   });
 
-  render();
+  loadIdiomsFromSupabase(function(success) {
+    if (success) {
+      console.log('成语数据加载成功，可以开始游戏');
+    } else {
+      console.log('成语数据加载失败，使用备用数据');
+    }
+    render();
+  });
 }
 
 window.onload = initCanvas;
