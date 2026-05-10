@@ -403,7 +403,8 @@ function startChallenge() {
 
 function startSession(withBoost) {
   var qs = getRandomQuestions(5);
-  var baseTime = Math.max(6, 10 - state.sessionIndex);
+  var baseTime = 10 - state.sessionIndex;
+  if (baseTime < 6) baseTime = 6;
   var actualTime = withBoost ? baseTime * 2 : baseTime;
   var firstQ = qs[0];
 
@@ -562,10 +563,14 @@ function skipQuestion() {
 }
 
 function nextQuestion() {
+  stopTimer();
   var nextIdx = state.currentQuestionIndex + 1;
   if (nextIdx >= state.questions.length) return;
 
   var nextQ = state.questions[nextIdx];
+  var baseTime = 10 - state.sessionIndex;
+  if (baseTime < 6) baseTime = 6;
+  var newTimer = state.hasBoost ? baseTime * 2 : baseTime;
 
   setState({
     currentQuestionIndex: nextIdx,
@@ -573,8 +578,12 @@ function nextQuestion() {
     shuffledOptions: shuffleChars(nextQ.idioms),
     isAnswerCorrect: null,
     isShaking: false,
-    gameStatus: GameStatus.PLAYING
+    gameStatus: GameStatus.PLAYING,
+    timer: newTimer,
+    maxTime: newTimer
   });
+  
+  startTimer();
 }
 
 function onSessionEnd(isTimeout) {
@@ -1028,7 +1037,8 @@ function drawBoostDialog() {
 
   var cardY = dialogY + 136;
   drawRoundRect(dialogX + 16, cardY, dialogW - 32, 90, 14, 'rgba(212,160,23,0.08)', 'rgba(212,160,23,0.2)', 1);
-  var baseTime = Math.max(6, 10 - state.sessionIndex);
+  var baseTime = 10 - state.sessionIndex;
+  if (baseTime < 6) baseTime = 6;
   drawText('⏱ 时间翻倍', dialogX + 36, cardY + 16, { fontSize: 14, fontWeight: '600', color: COLORS.brown });
   drawText(baseTime + 's → ' + (baseTime * 2) + 's', dialogX + 36, cardY + 40, { fontSize: 22, fontWeight: 'bold', color: COLORS.gold });
   drawText('本局倒计时翻倍至' + (baseTime * 2) + '秒', dialogX + 36, cardY + 68, { fontSize: 11, color: COLORS.brownLight });
