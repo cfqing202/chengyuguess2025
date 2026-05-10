@@ -1,8 +1,8 @@
 // Supabase 配置
-// 请在 Supabase 控制台创建项目后，将对应的 URL 和 ANON KEY 填入下方
+// 猴哥成语大冲关 - 后端 API 客户端
 
-const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // 例如: https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // 例如: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+const SUPABASE_URL = 'https://gccndjqkglzgpuutyecw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjY25kanFrZ2x6Z3B1dXR5ZWN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDE3OTQsImV4cCI6MjA5Mzk3Nzc5NH0.FBuVMuuQa8tVvaLdRrPYq33ehoNSSwVsx7oMxl8rjlQ';
 
 // Supabase 客户端类
 class SupabaseClient {

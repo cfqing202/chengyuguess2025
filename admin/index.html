@@ -977,6 +977,103 @@
             </table>
           </div>
         </div>
+
+        <div class="card" style="max-width: 600px; margin-top: 20px;">
+          <div class="card-header">
+            <span class="card-title">管理员账户管理</span>
+            <button class="btn btn-sm btn-primary" onclick="openModal('modal-add-admin')">+ 添加管理员</button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>用户名</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>最后登录</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>admin</td>
+                  <td><span class="badge badge-primary">超级管理员</span></td>
+                  <td><span class="badge badge-success">启用</span></td>
+                  <td>2025-05-10 10:30</td>
+                  <td>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('modal-edit-password')">修改密码</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>manager01</td>
+                  <td><span class="badge badge-warning">运营管理员</span></td>
+                  <td><span class="badge badge-success">启用</span></td>
+                  <td>2025-05-09 15:20</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">修改密码</button>
+                      <button class="btn btn-sm btn-danger">禁用</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>editor01</td>
+                  <td><span class="badge badge-success">内容编辑</span></td>
+                  <td><span class="badge badge-danger">禁用</span></td>
+                  <td>2025-05-01 09:00</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">修改密码</button>
+                      <button class="btn btn-sm btn-primary">启用</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="max-width: 600px; margin-top: 20px;">
+          <div class="card-header">
+            <span class="card-title">权限配置</span>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>角色</th>
+                  <th>数据看板</th>
+                  <th>用户管理</th>
+                  <th>成语管理</th>
+                  <th>系统设置</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-primary">超级管理员</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning">运营管理员</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--danger);">✗</span></td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success">内容编辑</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--danger);">✗</span></td>
+                  <td><span style="color: var(--success);">✓</span></td>
+                  <td><span style="color: var(--danger);">✗</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -1009,6 +1106,81 @@
       <div class="modal-footer">
         <button class="btn" style="background: rgba(255,255,255,0.1);" onclick="closeModal('modal-add-question')">取消</button>
         <button class="btn btn-primary" onclick="closeModal('modal-add-question')">添加</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 添加管理员弹窗 -->
+  <div class="modal-overlay" id="modal-add-admin">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">添加管理员</span>
+        <button class="modal-close" onclick="closeModal('modal-add-admin')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input type="text" class="form-input" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">初始密码</label>
+          <input type="password" class="form-input" placeholder="请输入初始密码">
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认密码</label>
+          <input type="password" class="form-input" placeholder="请再次输入密码">
+        </div>
+        <div class="form-group">
+          <label class="form-label">角色</label>
+          <select class="form-select">
+            <option value="super">超级管理员</option>
+            <option value="operator" selected>运营管理员</option>
+            <option value="editor">内容编辑</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">状态</label>
+          <select class="form-select">
+            <option value="enabled">启用</option>
+            <option value="disabled">禁用</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" style="background: rgba(255,255,255,0.1);" onclick="closeModal('modal-add-admin')">取消</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-add-admin')">添加</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 修改密码弹窗 -->
+  <div class="modal-overlay" id="modal-edit-password">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">修改密码</span>
+        <button class="modal-close" onclick="closeModal('modal-edit-password')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input type="text" class="form-input" value="admin" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">原密码</label>
+          <input type="password" class="form-input" placeholder="请输入原密码">
+        </div>
+        <div class="form-group">
+          <label class="form-label">新密码</label>
+          <input type="password" class="form-input" placeholder="请输入新密码">
+        </div>
+        <div class="form-group">
+          <label class="form-label">确认新密码</label>
+          <input type="password" class="form-input" placeholder="请再次输入新密码">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" style="background: rgba(255,255,255,0.1);" onclick="closeModal('modal-edit-password')">取消</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-edit-password')">确认修改</button>
       </div>
     </div>
   </div>
