@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猴哥成语大冲关 - 后台管理系统</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #D4A017;
+      --primary-dark: #B8860B;
+      --bg-dark: #1a1a2e;
+      --bg-card: #16213e;
+      --bg-light: #0f3460;
+      --text: #eaeaea;
+      --text-muted: #a0a0a0;
+      --danger: #e74c3c;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --border: rgba(212, 160, 23, 0.2);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-light));
+      padding: 20px 30px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .header h1 span { font-size: 28px; }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+    }
+    
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .main {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+    
+    .sidebar {
+      width: 240px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    
+    .menu-item {
+      padding: 14px 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    
+    .menu-item:hover {
+      background: rgba(212, 160, 23, 0.1);
+      color: var(--text);
+    }
+    
+    .menu-item.active {
+      background: rgba(212, 160, 23, 0.15);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    
+    .menu-icon { font-size: 18px; width: 24px; text-align: center; }
+    
+    .content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .page-title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .stat-change {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    
+    .stat-change.up { color: var(--success); }
+    .stat-change.down { color: var(--danger); }
+    
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .card-body {
+      padding: 0;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .table th {
+      background: rgba(0,0,0,0.2);
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .table tr:hover td {
+      background: rgba(212, 160, 23, 0.05);
+    }
+    
+    .table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge-success {
+      background: rgba(39, 174, 96, 0.2);
+      color: var(--success);
+    }
+    
+    .badge-warning {
+      background: rgba(243, 156, 18, 0.2);
+      color: var(--warning);
+    }
+    
+    .badge-danger {
+      background: rgba(231, 76, 60, 0.2);
+      color: var(--danger);
+    }
+    
+    .badge-primary {
+      background: rgba(212, 160, 23, 0.2);
+      color: var(--primary);
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .search-bar {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .search-input {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+      width: 280px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-overlay.active { display: flex; }
+    
+    .modal {
+      background: var(--bg-card);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+    }
+    
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .page-btn.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+    
+    .page-btn:hover:not(.active) {
+      background: rgba(212, 160, 23, 0.1);
+    }
+    
+    .id-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(0,0,0,0.2);
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .tab-btn.active {
+      background: var(--primary);
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1><span>🐵</span> 猴哥成语大冲关 - 后台管理</h1>
+    <div class="header-right">
+      <div class="user-info">
+        <div class="avatar">A</div>
+        <span>管理员</span>
+      </div>
+    </div>
+  </header>
+  
+  <div class="main">
+    <nav class="sidebar">
+      <div class="menu-item active" data-page="dashboard">
+        <span class="menu-icon">📊</span>
+        <span>数据概览</span>
+      </div>
+      <div class="menu-item" data-page="users">
+        <span class="menu-icon">👥</span>
+        <span>用户管理</span>
+      </div>
+      <div class="menu-item" data-page="questions">
+        <span class="menu-icon">📝</span>
+        <span>成语题库</span>
+      </div>
+      <div class="menu-item" data-page="daily">
+        <span class="menu-icon">📅</span>
+        <span>每日挑战</span>
+      </div>
+      <div class="menu-item" data-page="ads">
+        <span class="menu-icon">📺</span>
+        <span>广告数据</span>
+      </div>
+      <div class="menu-item" data-page="settings">
+        <span class="menu-icon">⚙️</span>
+        <span>系统设置</span>
+      </div>
+    </nav>
+    
+    <main class="content">
+      <!-- 数据概览页面 -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h2 class="page-title">数据概览</h2>
+          <button class="btn btn-primary">📅 今日数据</button>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">总用户数</div>
+            <div class="stat-value">12,856</div>
+            <div class="stat-change up">↑ 较昨日 +128</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日活跃用户</div>
+            <div class="stat-value">3,642</div>
+            <div class="stat-change up">↑ 较昨日 +256</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日游戏次数</div>
+            <div class="stat-value">28,456</div>
+            <div class="stat-change up">↑ 较昨日 +1,234</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日完成挑战</div>
+            <div class="stat-value">5,678</div>
+            <div class="stat-change down">↓ 较昨日 -89</div>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">今日广告收益(预估)</div>
+            <div class="stat-value">¥ 1,234.56</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日观看广告次数</div>
+            <div class="stat-value">8,921</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">平均 eCPM</div>
+            <div class="stat-value">¥ 38.50</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">用户平均留存率</div>
+            <div class="stat-value">45.6%</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">最近7天游戏趋势</span>
+          </div>
+          <div class="card-body" style="padding: 30px; text-align: center; color: var(--text-muted);">
+            [图表区域 - 需要集成图表库]
+          </div>
+        </div>
+      </div>
+      
+      <!-- 用户管理页面 -->
+      <div class="page" id="page-users">
+        <div class="page-header">
+          <h2 class="page-title">用户管理</h2>
+          <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索用户ID/昵称/手机号...">
+            <button class="btn btn-primary">搜索</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">用户列表</span>
+            <span style="color: var(--text-muted); font-size: 13px;">共 12,856 名用户</span>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>用户ID</th>
+                  <th>昵称</th>
+                  <th>身份</th>
+                  <th>总积分</th>
+                  <th>贡献值</th>
+                  <th>状态</th>
+                  <th>注册时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>u_001</td>
+                  <td>玩家张三</td>
+                  <td><span class="badge badge-primary">🎓 秀才</span></td>
+                  <td>5,280</td>
+                  <td>8/10</td>
+                  <td><span class="badge badge-success">正常</span></td>
+                  <td>2025-01-15</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">详情</button>
+                      <button class="btn btn-sm btn-danger">禁用</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>u_002</td>
+                  <td>玩家李四</td>
+                  <td><span class="badge badge-primary">📖 书生</span></td>
+                  <td>1,200</td>
+                  <td>3/10</td>
+                  <td><span class="badge badge-success">正常</span></td>
+                  <td>2025-02-20</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">详情</button>
+                      <button class="btn btn-sm btn-danger">禁用</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>u_003</td>
+                  <td>玩家王五</td>
+                  <td><span class="badge badge-primary">👑 状元</span></td>
+                  <td>28,560</td>
+                  <td>10/10</td>
+                  <td><span class="badge badge-warning">异常</span></td>
+                  <td>2025-01-05</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">详情</button>
+                      <button class="btn btn-sm btn-danger">禁用</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>u_004</td>
+                  <td>玩家赵六</td>
+                  <td><span class="badge badge-primary">📜 举人</span></td>
+                  <td>12,340</td>
+                  <td>7/10</td>
+                  <td><span class="badge badge-success">正常</span></td>
+                  <td>2025-03-01</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">详情</button>
+                      <button class="btn btn-sm btn-danger">禁用</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>u_005</td>
+                  <td>玩家孙七</td>
+                  <td><span class="badge badge-primary">🏮 进士</span></td>
+                  <td>18,900</td>
+                  <td>9/10</td>
+                  <td><span class="badge badge-danger">非法</span></td>
+                  <td>2024-12-20</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">详情</button>
+                      <button class="btn btn-sm btn-primary">解封</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="pagination">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">...</button>
+          <button class="page-btn">128</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+      
+      <!-- 成语题库页面 -->
+      <div class="page" id="page-questions">
+        <div class="page-header">
+          <h2 class="page-title">成语题库</h2>
+          <div class="search-bar">
+            <button class="btn btn-primary" onclick="openModal('modal-add-question')">+ 添加成语</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">成语列表</span>
+            <div class="tab-bar">
+              <button class="tab-btn active">全部</button>
+              <button class="tab-btn">简单</button>
+              <button class="tab-btn">中等</button>
+              <button class="tab-btn">困难</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>成语</th>
+                  <th>释义</th>
+                  <th>难度</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>一心一意</td>
+                  <td>只有一个心思，没有别的念头。形容专心致志。</td>
+                  <td><span class="badge badge-success">简单</span></td>
+                  <td>2025-01-01</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">编辑</button>
+                      <button class="btn btn-sm btn-danger">删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>画龙点睛</td>
+                  <td>画龙时点上眼睛。比喻在关键处加一点使整体更生动。</td>
+                  <td><span class="badge badge-warning">中等</span></td>
+                  <td>2025-01-01</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">编辑</button>
+                      <button class="btn btn-sm btn-danger">删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>塞翁失马</td>
+                  <td>边塞老人丢失马。比喻祸福无常。</td>
+                  <td><span class="badge badge-warning">中等</span></td>
+                  <td>2025-01-01</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">编辑</button>
+                      <button class="btn btn-sm btn-danger">删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>破釜沉舟</td>
+                  <td>打破饭锅，凿沉船只。比喻下决心拼到底。</td>
+                  <td><span class="badge badge-danger">困难</span></td>
+                  <td>2025-01-01</td>
+                  <td>
+                    <div class="btn-group">
+                      <button class="btn btn-sm btn-primary">编辑</button>
+                      <button class="btn btn-sm btn-danger">删除</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 每日挑战页面 -->
+      <div class="page" id="page-daily">
+        <div class="page-header">
+          <h2 class="page-title">每日挑战数据</h2>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">今日参与人数</div>
+            <div class="stat-value">8,921</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日完成挑战人数</div>
+            <div class="stat-value">5,678</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日挑战完成率</div>
+            <div class="stat-value">63.6%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">平均连胜局数</div>
+            <div class="stat-value">3.2 局</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">今日挑战明细</span>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>参与用户</th>
+                  <th>完成人数</th>
+                  <th>完成率</th>
+                  <th>平均得分</th>
+                  <th>发放积分</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2025-05-10</td>
+                  <td>8,921</td>
+                  <td>5,678</td>
+                  <td>63.6%</td>
+                  <td>856</td>
+                  <td>4,856,000</td>
+                </tr>
+                <tr>
+                  <td>2025-05-09</td>
+                  <td>8,765</td>
+                  <td>5,432</td>
+                  <td>62.0%</td>
+                  <td>823</td>
+                  <td>4,472,000</td>
+                </tr>
+                <tr>
+                  <td>2025-05-08</td>
+                  <td>9,123</td>
+                  <td>5,890</td>
+                  <td>64.6%</td>
+                  <td>892</td>
+                  <td>5,254,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 广告数据页面 -->
+      <div class="page" id="page-ads">
+        <div class="page-header">
+          <h2 class="page-title">广告数据</h2>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">今日广告展示</div>
+            <div class="stat-value">125,678</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日广告点击</div>
+            <div class="stat-value">8,921</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">平均 eCPM</div>
+            <div class="stat-value">¥ 38.50</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">今日预估收益</div>
+            <div class="stat-value">¥ 1,234.56</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">广告播放记录</span>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>用户ID</th>
+                  <th>广告类型</th>
+                  <th>会话ID</th>
+                  <th>观看时长</th>
+                  <th>eCPM</th>
+                  <th>状态</th>
+                  <th>时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>u_001</td>
+                  <td>时间双倍</td>
+                  <td>sess_001</td>
+                  <td>30秒</td>
+                  <td>¥ 35.20</td>
+                  <td><span class="badge badge-success">完成</span></td>
+                  <td>10:23:45</td>
+                </tr>
+                <tr>
+                  <td>u_002</td>
+                  <td>复活</td>
+                  <td>sess_002</td>
+                  <td>28秒</td>
+                  <td>¥ 32.10</td>
+                  <td><span class="badge badge-success">完成</span></td>
+                  <td>10:25:12</td>
+                </tr>
+                <tr>
+                  <td>u_003</td>
+                  <td>时间双倍</td>
+                  <td>sess_003</td>
+                  <td>5秒</td>
+                  <td>-</td>
+                  <td><span class="badge badge-danger">跳过</span></td>
+                  <td>10:28:33</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 系统设置页面 -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <h2 class="page-title">系统设置</h2>
+        </div>
+        
+        <div class="card" style="max-width: 600px;">
+          <div class="card-header">
+            <span class="card-title">基本设置</span>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <div class="form-group">
+              <label class="form-label">游戏名称</label>
+              <input type="text" class="form-input" value="猴哥成语大冲关">
+            </div>
+            <div class="form-group">
+              <label class="form-label">每日挑战开启时间</label>
+              <input type="time" class="form-input" value="00:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">每局游戏时间(秒)</label>
+              <input type="number" class="form-input" value="10">
+            </div>
+            <div class="form-group">
+              <label class="form-label">连胜达标局数</label>
+              <input type="number" class="form-input" value="5">
+            </div>
+            <button class="btn btn-primary">保存设置</button>
+          </div>
+        </div>
+        
+        <div class="card" style="max-width: 600px; margin-top: 20px;">
+          <div class="card-header">
+            <span class="card-title">身份晋升规则</span>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>身份</th>
+                  <th>连胜要求</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>📖 书生</td><td>0 场</td></tr>
+                <tr><td>📝 童生</td><td>3 场</td></tr>
+                <tr><td>🎓 秀才</td><td>7 场</td></tr>
+                <tr><td>📜 举人</td><td>12 场</td></tr>
+                <tr><td>🏮 进士</td><td>18 场</td></tr>
+                <tr><td>👑 状元</td><td>25 场</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 添加成语弹窗 -->
+  <div class="modal-overlay" id="modal-add-question">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">添加新成语</span>
+        <button class="modal-close" onclick="closeModal('modal-add-question')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">成语</label>
+          <input type="text" class="form-input" placeholder="例如: 一心一意">
+        </div>
+        <div class="form-group">
+          <label class="form-label">释义</label>
+          <textarea class="form-textarea" placeholder="请输入成语释义"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">难度</label>
+          <select class="form-select">
+            <option value="1">简单</option>
+            <option value="2">中等</option>
+            <option value="3">困难</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" style="background: rgba(255,255,255,0.1);" onclick="closeModal('modal-add-question')">取消</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-add-question')">添加</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 菜单切换
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const page = this.dataset.page;
+        
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+      });
+    });
+    
+    // Tab 切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // 弹窗控制
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+    
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    
+    // 点击弹窗外部关闭
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

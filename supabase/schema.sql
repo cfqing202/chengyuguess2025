@@ -80,11 +80,8 @@ CREATE TABLE IF NOT EXISTS gift_redemptions (
 CREATE TABLE IF NOT EXISTS idioms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   idiom VARCHAR(20) NOT NULL,
-  pinyin VARCHAR(100),
   explanation TEXT,
-  example_sentence TEXT,
   difficulty INTEGER DEFAULT 1 CHECK (difficulty BETWEEN 1 AND 5),
-  category VARCHAR(50),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
