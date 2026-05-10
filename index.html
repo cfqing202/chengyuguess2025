@@ -394,7 +394,40 @@ function getEffectiveConsecutiveA(results) {
 }
 
 function initUser() {
-  setState({ screen: 'home' });
+  var tempOpenid = 'user_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  
+  getUserFromSupabase(tempOpenid, function(existingUser) {
+    if (existingUser) {
+      setState({ 
+        screen: 'home',
+        userInfo: {
+          id: existingUser.id,
+          openid: existingUser.openid,
+          nickname: existingUser.nickname || '玩家',
+          totalPoints: existingUser.total_points || 0,
+          identityLevel: existingUser.identity_level || 0,
+          adContributionScore: existingUser.ad_contribution_score || 0
+        }
+      });
+    } else {
+      saveUserToSupabase({
+        openid: tempOpenid,
+        nickname: '玩家' + Math.floor(Math.random() * 10000)
+      }, function(newUser) {
+        setState({ 
+          screen: 'home',
+          userInfo: {
+            id: newUser ? newUser.id : null,
+            openid: tempOpenid,
+            nickname: newUser ? newUser.nickname : '玩家',
+            totalPoints: 0,
+            identityLevel: 0,
+            adContributionScore: 0
+          }
+        });
+      });
+    }
+  });
 }
 
 function startChallenge() {
