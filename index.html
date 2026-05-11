@@ -322,6 +322,8 @@ var state = {
     maxSessionsReached: false
   },
 
+  dailyChallengeHistory: [],
+
   sessionId: '',
   sessionIndex: 0,
   currentScore: 0,
@@ -342,7 +344,7 @@ var state = {
 
   isAnswerCorrect: null,
   isShaking: false,
-  monthlyPassedDays: 3,
+  monthlyPassedDays: 0,
   currentIdentity: IdentityLevel.SCHOLAR,
 
   animTime: 0,
@@ -413,6 +415,26 @@ function getEffectiveConsecutiveA(results) {
     }
   }
   return count;
+}
+
+function getIdentityLevelByDays(days) {
+  for (var i = IDENTITY_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (days >= IDENTITY_THRESHOLDS[i]) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+function calculateMonthlyPassedDays() {
+  var passed = 0;
+  var history = state.dailyChallengeHistory || [];
+  for (var i = 0; i < history.length; i++) {
+    if (history[i].passed) {
+      passed++;
+    }
+  }
+  return passed;
 }
 
 function initUser() {
@@ -668,7 +690,9 @@ function onSessionEnd(isTimeout) {
     });
 
     if (dailyPassed) {
-      setTimeout(function() { setState({ showDailySuccessDialog: true }); }, 500);
+      var today = new Date().toISOString().split('T')[0];
+      var newHistory = (state.dailyChallengeHistory || []).concat([{ date: today, passed: true }]);
+      setState({ showDailySuccessDialog: true, dailyChallengeHistory: newHistory });
     }
   } else {
     setState({
@@ -895,6 +919,8 @@ function drawLaunchScreen() {
 function drawHomeScreen() {
   drawWarmBackground(); clearTouchRegions();
   var pad = 20, contentW = screenW - pad * 2, top = safeTop, ui = state.userInfo;
+  var monthlyDays = calculateMonthlyPassedDays();
+  var currentIdentityLevel = getIdentityLevelByDays(monthlyDays);
 
   if (ui.userStatus === UserStatus.ABNORMAL) {
     drawRoundRect(pad, top + 10, contentW, 36, 8, 'rgba(239,68,68,0.1)', 'rgba(239,68,68,0.3)', 1);
@@ -903,9 +929,9 @@ function drawHomeScreen() {
 
   var headerY = ui.userStatus === UserStatus.ABNORMAL ? top + 56 : top + 20;
   drawCircle(pad + 20, headerY + 20, 20, 'rgba(212,160,23,0.15)');
-  drawText(IDENTITY_ICONS[ui.identityLevel] || '📖', pad + 20, headerY + 20, { fontSize: 16, textAlign: 'center', baseline: 'middle' });
+  drawText(IDENTITY_ICONS[currentIdentityLevel] || '📖', pad + 20, headerY + 20, { fontSize: 16, textAlign: 'center', baseline: 'middle' });
   drawText(ui.nickname, pad + 48, headerY + 10, { fontSize: 14, color: COLORS.brown, fontWeight: '600' });
-  drawText(IDENTITY_NAMES[ui.identityLevel] || '书生', pad + 48, headerY + 30, { fontSize: 11, color: COLORS.gold });
+  drawText(IDENTITY_NAMES[currentIdentityLevel] || '书生', pad + 48, headerY + 30, { fontSize: 11, color: COLORS.gold });
 
   var cardY = headerY + 56, cardH = 100;
   drawRoundRect(pad, cardY, contentW, cardH, 16, '#B8860B');
@@ -938,9 +964,9 @@ function drawHomeScreen() {
   drawRoundRect(pad, identityY, contentW, 76, 16, '#3A2010');
   drawGradientRect(pad, identityY, contentW, 76, 16, [[0, '#2C1810'], [1, '#4A2512']], 'diagonal');
   drawCircle(pad + 36, identityY + 38, 20, 'rgba(212,160,23,0.3)');
-  drawText(IDENTITY_ICONS[ui.identityLevel] || '📖', pad + 36, identityY + 38, { fontSize: 18, textAlign: 'center', baseline: 'middle' });
+  drawText(IDENTITY_ICONS[currentIdentityLevel] || '📖', pad + 36, identityY + 38, { fontSize: 18, textAlign: 'center', baseline: 'middle' });
   drawText('身份晋升', pad + 68, identityY + 20, { fontSize: 14, fontWeight: '600', color: COLORS.yellow400 });
-  drawText('本月' + state.monthlyPassedDays + '天 · ' + IDENTITY_NAMES[ui.identityLevel], pad + 68, identityY + 42, { fontSize: 11, color: '#CA8A04' });
+  drawText('本月' + monthlyDays + '天 · ' + IDENTITY_NAMES[currentIdentityLevel], pad + 68, identityY + 42, { fontSize: 11, color: '#CA8A04' });
   drawText('→', screenW - pad - 20, identityY + 38, { fontSize: 16, color: '#CA8A04', textAlign: 'center', baseline: 'middle' });
   addTouchRegion(pad, identityY, contentW, 76, function() { navigateToIdentity(); });
 
@@ -1208,6 +1234,8 @@ function drawDailySuccessDialog() {
   ctx.save(); ctx.globalAlpha = 1;
 
   var pad = 20, dialogW = screenW - pad * 2, dialogH = 360, dialogX = pad, dialogY = (screenH - dialogH) / 2;
+  var monthlyDays = calculateMonthlyPassedDays();
+  var currentIdentityLevel = getIdentityLevelByDays(monthlyDays);
 
   drawRoundRect(dialogX, dialogY, dialogW, dialogH, 20, '#FFF8E1');
   drawGradientRect(dialogX, dialogY, dialogW, dialogH, 20, [[0, '#FFFDF5'], [1, '#FFF3D6']], 'vertical');
@@ -1219,11 +1247,11 @@ function drawDailySuccessDialog() {
   drawText('今日冲关成功！', dialogX + dialogW / 2, dialogY + 110, { fontSize: 22, fontWeight: 'bold', color: COLORS.brown, textAlign: 'center' });
   drawText('连续通过5局，太厉害了！', dialogX + dialogW / 2, dialogY + 138, { fontSize: 13, color: COLORS.brownLight, textAlign: 'center' });
 
-  var currentLevelName = IDENTITY_NAMES[state.userInfo.identityLevel];
+  var currentLevelName = IDENTITY_NAMES[currentIdentityLevel];
   drawRoundRect(dialogX + 16, dialogY + 165, dialogW - 32, 100, 12, 'rgba(212,160,23,0.08)', 'rgba(212,160,23,0.2)', 1);
   drawText('当前身份', dialogX + 36, dialogY + 180, { fontSize: 13, color: COLORS.brownLight });
-  drawText(IDENTITY_ICONS[state.userInfo.identityLevel] + ' ' + currentLevelName, dialogX + 36, dialogY + 205, { fontSize: 18, fontWeight: 'bold', color: COLORS.gold });
-  drawText('本月' + state.monthlyPassedDays + '天', dialogX + dialogW - 36, dialogY + 200, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
+  drawText(IDENTITY_ICONS[currentIdentityLevel] + ' ' + currentLevelName, dialogX + 36, dialogY + 205, { fontSize: 18, fontWeight: 'bold', color: COLORS.gold });
+  drawText('本月' + monthlyDays + '天', dialogX + dialogW - 36, dialogY + 200, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
 
   var btnY = dialogY + 250;
   drawButton(dialogX + 16, btnY, dialogW - 32, 48, '🏠 返回首页', { bgColor: COLORS.red, fontSize: 15, fontWeight: 'bold' });
@@ -1239,6 +1267,8 @@ function drawDailySuccessDialog() {
 function drawIdentityScreen() {
   drawDarkBackground(); clearTouchRegions();
   var pad = 16, contentW = screenW - pad * 2, top = safeTop, ui = state.userInfo;
+  var monthlyDays = calculateMonthlyPassedDays();
+  var currentIdentityLevel = getIdentityLevelByDays(monthlyDays);
 
   drawRoundRect(pad, top + 16, 36, 36, 18, 'rgba(255,255,255,0.1)');
   drawText('←', pad + 18, top + 34, { fontSize: 16, color: COLORS.yellow400, textAlign: 'center', baseline: 'middle' });
@@ -1248,13 +1278,13 @@ function drawIdentityScreen() {
   var progressY = top + 68;
   drawRoundRect(pad, progressY, contentW, 80, 14, 'rgba(212,160,23,0.08)', 'rgba(212,160,23,0.2)', 1);
   drawText('✨ 本月冲关天数', pad + 16, progressY + 16, { fontSize: 13, fontWeight: '600', color: '#FDE68A' });
-  drawText(state.monthlyPassedDays + '/30天', pad + contentW - 16, progressY + 16, { fontSize: 13, fontWeight: 'bold', color: COLORS.yellow400, textAlign: 'right' });
+  drawText(monthlyDays + '/30天', pad + contentW - 16, progressY + 16, { fontSize: 13, fontWeight: 'bold', color: COLORS.yellow400, textAlign: 'right' });
 
   var barY = progressY + 42;
   drawRoundRect(pad + 16, barY, contentW - 32, 10, 5, 'rgba(255,255,255,0.08)');
-  var fillW = (contentW - 32) * (state.monthlyPassedDays / 30);
+  var fillW = (contentW - 32) * (monthlyDays / 30);
   if (fillW > 0) drawGradientRect(pad + 16, barY, fillW, 10, 5, [[0, '#FFD700'], [1, '#FFA500']], 'horizontal');
-  drawText('当前身份：' + IDENTITY_NAMES[ui.identityLevel], pad + 16, barY + 16, { fontSize: 10, color: '#CA8A04' });
+  drawText('当前身份：' + IDENTITY_NAMES[currentIdentityLevel], pad + 16, barY + 16, { fontSize: 10, color: '#CA8A04' });
 
   var listY = progressY + 100;
   drawRoundRect(pad, listY, contentW, IDENTITY_NAMES.length * 58 + 44, 14, 'rgba(255,255,255,0.05)', 'rgba(212,160,23,0.15)', 1);
@@ -1262,8 +1292,8 @@ function drawIdentityScreen() {
 
   for (var i = 0; i < IDENTITY_NAMES.length; i++) {
     var py = listY + 38 + i * 58;
-    var isCurrent = i === ui.identityLevel;
-    var isUnlocked = state.monthlyPassedDays >= IDENTITY_THRESHOLDS[i];
+    var isCurrent = i === currentIdentityLevel;
+    var isUnlocked = monthlyDays >= IDENTITY_THRESHOLDS[i];
 
     if (isCurrent) drawRoundRect(pad + 8, py - 4, contentW - 16, 54, 8, 'rgba(212,160,23,0.12)');
 
@@ -1318,6 +1348,8 @@ function drawProfileScreen() {
 function drawGiftScreen() {
   drawWarmBackground(); clearTouchRegions();
   var pad = 16, contentW = screenW - pad * 2, top = safeTop;
+  var monthlyDays = calculateMonthlyPassedDays();
+  var currentIdentityLevel = getIdentityLevelByDays(monthlyDays);
 
   drawRoundRect(pad, top + 16, 36, 36, 18, 'rgba(255,255,255,0.5)');
   drawText('←', pad + 18, top + 34, { fontSize: 16, color: COLORS.brown, textAlign: 'center', baseline: 'middle' });
@@ -1327,8 +1359,8 @@ function drawGiftScreen() {
   var infoY = top + 70;
   drawRoundRect(pad, infoY, contentW, 70, 12, 'rgba(212,160,23,0.08)', 'rgba(212,160,23,0.15)', 1);
   drawText('当前身份', pad + 16, infoY + 14, { fontSize: 12, color: COLORS.brownLight });
-  drawText(IDENTITY_ICONS[state.userInfo.identityLevel] + ' ' + IDENTITY_NAMES[state.userInfo.identityLevel], pad + 16, infoY + 38, { fontSize: 16, fontWeight: 'bold', color: COLORS.gold });
-  drawText('本月' + state.monthlyPassedDays + '天冲关', pad + contentW - 16, infoY + 40, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
+  drawText(IDENTITY_ICONS[currentIdentityLevel] + ' ' + IDENTITY_NAMES[currentIdentityLevel], pad + 16, infoY + 38, { fontSize: 16, fontWeight: 'bold', color: COLORS.gold });
+  drawText('本月' + monthlyDays + '天冲关', pad + contentW - 16, infoY + 40, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
 
   var giftListY = infoY + 86;
   drawText('🎁 当月礼品', pad + 16, giftListY, { fontSize: 14, fontWeight: '600', color: COLORS.brown });
@@ -1351,8 +1383,8 @@ function drawGiftScreen() {
   for (var i = 0; i < giftItems.length; i++) {
     var item = giftItems[i];
     var iy = giftListY + 30 + i * itemH;
-    var isUnlocked = state.monthlyPassedDays >= item.required;
-    var isCurrentLevel = IDENTITY_NAMES[state.userInfo.identityLevel] === item.level;
+    var isUnlocked = monthlyDays >= item.required;
+    var isCurrentLevel = IDENTITY_NAMES[currentIdentityLevel] === item.level;
 
     if (isCurrentLevel) drawRoundRect(pad + 4, iy - 2, contentW - 8, itemH - 4, 8, 'rgba(212,160,23,0.1)');
 
