@@ -731,7 +731,7 @@ function playAgain() {
 
 function navigateToIdentity() { setState({ screen: 'identity' }); }
 function navigateToProfile() { setState({ screen: 'profile' }); }
-function navigateToGift() { setState({ screen: 'gift' }); }
+function navigateToGift() { showToast({ title: '尚未开放，敬请期待' }); }
 function navigateToHome() { setState({ screen: 'home', gameStatus: GameStatus.IDLE }); stopTimer(); }
 
 function claimGift(levelName) {
@@ -870,7 +870,7 @@ function drawLaunchScreen() {
   var top = safeTop;
 
   drawText('猴哥成语大冲关', screenW / 2, top + 120, { fontSize: 28, fontWeight: 'bold', color: COLORS.brown, textAlign: 'center' });
-  drawText('成语答题 + 每日冲关 + 身份晋升 + 月度礼品', screenW / 2, top + 165, { fontSize: 12, color: COLORS.brownLight, textAlign: 'center' });
+  drawText('成语答题 + 每日冲关 + 身份晋升', screenW / 2, top + 165, { fontSize: 12, color: COLORS.brownLight, textAlign: 'center' });
 
   drawCircle(screenW / 2, top + 260, 50, 'rgba(212,160,23,0.15)');
   drawText('🐵', screenW / 2, top + 260, { fontSize: 40, textAlign: 'center', baseline: 'middle' });
@@ -939,20 +939,15 @@ function drawHomeScreen() {
   drawGradientRect(pad, identityY, contentW, 76, 16, [[0, '#2C1810'], [1, '#4A2512']], 'diagonal');
   drawCircle(pad + 36, identityY + 38, 20, 'rgba(212,160,23,0.3)');
   drawText(IDENTITY_ICONS[ui.identityLevel] || '📖', pad + 36, identityY + 38, { fontSize: 18, textAlign: 'center', baseline: 'middle' });
-  drawText('身份晋升 · 月度礼品', pad + 68, identityY + 20, { fontSize: 14, fontWeight: '600', color: COLORS.yellow400 });
+  drawText('身份晋升', pad + 68, identityY + 20, { fontSize: 14, fontWeight: '600', color: COLORS.yellow400 });
   drawText('本月' + state.monthlyPassedDays + '天 · ' + IDENTITY_NAMES[ui.identityLevel], pad + 68, identityY + 42, { fontSize: 11, color: '#CA8A04' });
   drawText('→', screenW - pad - 20, identityY + 38, { fontSize: 16, color: '#CA8A04', textAlign: 'center', baseline: 'middle' });
   addTouchRegion(pad, identityY, contentW, 76, function() { navigateToIdentity(); });
 
-  var bottomY = screenH - 90, profileBtnW = (contentW - 10) / 2;
+  var bottomY = screenH - 90, profileBtnW = screenW - pad * 2;
   drawRoundRect(pad, bottomY, profileBtnW, 44, 10, 'rgba(255,255,255,0.6)', 'rgba(212,160,23,0.2)', 1);
   drawText('👤 个人中心', pad + profileBtnW / 2, bottomY + 22, { fontSize: 13, fontWeight: '600', color: COLORS.brown, textAlign: 'center', baseline: 'middle' });
   addTouchRegion(pad, bottomY, profileBtnW, 44, function() { navigateToProfile(); });
-
-  var giftBtnX = pad + profileBtnW + 10;
-  drawRoundRect(giftBtnX, bottomY, profileBtnW, 44, 10, 'rgba(255,255,255,0.6)', 'rgba(212,160,23,0.2)', 1);
-  drawText('🎁 礼品中心', giftBtnX + profileBtnW / 2, bottomY + 22, { fontSize: 13, fontWeight: '600', color: COLORS.brown, textAlign: 'center', baseline: 'middle' });
-  addTouchRegion(giftBtnX, bottomY, profileBtnW, 44, function() { navigateToGift(); });
 
   var maxReached = state.dailyStatus.maxSessionsReached;
   drawText(maxReached ? '今日已达30局上限，继续玩不获积分' : '今日已玩' + state.dailyStatus.totalSessions + '/30局', screenW / 2, screenH - 36, { fontSize: 11, color: COLORS.brownLight, textAlign: 'center' });
@@ -1229,9 +1224,8 @@ function drawDailySuccessDialog() {
   drawText('当前身份', dialogX + 36, dialogY + 180, { fontSize: 13, color: COLORS.brownLight });
   drawText(IDENTITY_ICONS[state.userInfo.identityLevel] + ' ' + currentLevelName, dialogX + 36, dialogY + 205, { fontSize: 18, fontWeight: 'bold', color: COLORS.gold });
   drawText('本月' + state.monthlyPassedDays + '天', dialogX + dialogW - 36, dialogY + 200, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
-  drawText('🎁 可领取月度礼品（抖音小店优惠券）', dialogX + 36, dialogY + 238, { fontSize: 11, color: COLORS.gold });
 
-  var btnY = dialogY + 290;
+  var btnY = dialogY + 250;
   drawButton(dialogX + 16, btnY, dialogW - 32, 48, '🏠 返回首页', { bgColor: COLORS.red, fontSize: 15, fontWeight: 'bold' });
   addTouchRegion(dialogX + 16, btnY, dialogW - 32, 48, function() { returnHome(); });
 
@@ -1263,9 +1257,8 @@ function drawIdentityScreen() {
   drawText('当前身份：' + IDENTITY_NAMES[ui.identityLevel], pad + 16, barY + 16, { fontSize: 10, color: '#CA8A04' });
 
   var listY = progressY + 100;
-  var giftMap = ['5元优惠券','10元优惠券','15元优惠券','20元优惠券','30元优惠券','50元优惠券','80元优惠券','100元优惠券'];
   drawRoundRect(pad, listY, contentW, IDENTITY_NAMES.length * 58 + 44, 14, 'rgba(255,255,255,0.05)', 'rgba(212,160,23,0.15)', 1);
-  drawText('身份等级 · 月度礼品', pad + 16, listY + 16, { fontSize: 13, fontWeight: '600', color: '#FDE68A' });
+  drawText('身份等级', pad + 16, listY + 16, { fontSize: 13, fontWeight: '600', color: '#FDE68A' });
 
   for (var i = 0; i < IDENTITY_NAMES.length; i++) {
     var py = listY + 38 + i * 58;
@@ -1279,7 +1272,7 @@ function drawIdentityScreen() {
 
     var nameColor = isCurrent ? '#FFD700' : isUnlocked ? '#FDE68A' : 'rgba(255,255,255,0.3)';
     drawText(IDENTITY_NAMES[i], pad + 52, py + 8, { fontSize: 14, fontWeight: isCurrent ? 'bold' : '500', color: nameColor });
-    drawText('需' + IDENTITY_THRESHOLDS[i] + '天 · 抖音小店' + giftMap[i], pad + 52, py + 28, { fontSize: 10, color: 'rgba(255,255,255,0.4)' });
+    drawText('需' + IDENTITY_THRESHOLDS[i] + '天冲关', pad + 52, py + 28, { fontSize: 10, color: 'rgba(255,255,255,0.4)' });
 
     if (isCurrent) drawText('当前', pad + contentW - 16, py + 18, { fontSize: 11, fontWeight: 'bold', color: '#FFD700', textAlign: 'right', baseline: 'middle' });
     else if (isUnlocked) drawText('已达成', pad + contentW - 16, py + 18, { fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'right', baseline: 'middle' });
@@ -1319,15 +1312,6 @@ function drawProfileScreen() {
     if (infoItems[i].action) {
       drawText('>', pad + contentW - 30, iy + 14, { fontSize: 12, color: COLORS.brownLight, textAlign: 'right' });
     }
-  }
-
-  var giftHistoryY = infoY + infoItems.length * 48 + 16;
-  drawText('🎁 礼品领取记录', pad + 16, giftHistoryY, { fontSize: 14, fontWeight: '600', color: COLORS.brown });
-
-  var giftHistory = state.giftClaimHistory || [];
-  if (giftHistory.length === 0) {
-    drawRoundRect(pad, giftHistoryY + 22, contentW, 48, 10, 'rgba(255,255,255,0.5)', 'rgba(212,160,23,0.1)', 1);
-    drawText('暂无领取记录', screenW / 2, giftHistoryY + 46, { fontSize: 12, color: COLORS.brownLight, textAlign: 'center', baseline: 'middle' });
   }
 }
 
